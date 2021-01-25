@@ -45,25 +45,23 @@ Please read DEV.md for the detailed development guide.
 
 ## Contract Address on MainNet
 
-- Cyclone Token: 
+- Cyclone Token: `io1f4acssp65t6s90egjkzpvrdsrjjyysnvxgqjrh`
 
-- Timelock:
+- Timelock: `io10jv5lvagcgyvzagdlymagucyp3sy9ykktkudth`
 
-- GovernorAlpha:
+- GovernorAlpha: `io1w8n28wr5dpc2uh3pzvx4n402h0l2agmu67a26x`
 
-- Aeolus: 
+- Aeolus:  `io1j2rwjfcm7jt7cwdnlkh0203chlrtfnc59424xc`
 
-- Hasher: ```io1pfq0g3ye7pp0gamtw4hj9kskunn3ue7400wdm5```
+- Hasher: `io1pfq0g3ye7pp0gamtw4hj9kskunn3ue7400wdm5`
 
-- Verifier: ```io1rn3z2c9hc3fxnukwa0cl69hdveh0uy8mar8vqr```
+- Verifier: `io1rn3z2c9hc3fxnukwa0cl69hdveh0uy8mar8vqr`
 
-- CoinCyclone
-  - 10K Coins
-  - 100K Coins
-  - 1M Coins
+- Pool 1 (Squid): `io15w9kwskwl9tn7luhcwrj0rarzjp988pafg07uf` 
 
-- ERC20Cyclone
-  - 1 Token
-  - 100 Tokens
-  - 10k Tokens
-  - 1M Tokens
+- Pool 2 (Dolphin): `io1wcd67wk36e3r8eku8scv7g7azsfnqs7z3e38xg` 
+
+- Pool 3 (Shark): `io1v667xgkux8uv0gell53ew5tr090c69k85deezn` 
+
+- Pool 4 (Whale): `io1wnaks7kectrkxk5v4d7mh97jkqjl4p0690jxfx` 
+
