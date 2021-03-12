@@ -1,8 +1,11 @@
-pragma solidity 0.5.17;
+pragma solidity <0.6 >=0.4.24;
 
-import "./Cyclone.sol";
+import "../Cyclone.sol";
+import "./IMimoFactory.sol";
+import "./IMimoExchange.sol";
 
 contract CoinCyclone is Cyclone {
+  IMimoExchange public mimoExchange;
   constructor(
     IVerifier _verifier,
     IMintableToken _cyctoken,
@@ -12,7 +15,9 @@ contract CoinCyclone is Cyclone {
     uint256 _denominationRound,
     uint32 _merkleTreeHeight,
     address _operator
-  ) Cyclone(_verifier, _cyctoken, _mimoFactory, _aeolus, _initDenomination, _denominationRound, _merkleTreeHeight, _operator) public {}
+  ) Cyclone(_verifier, _cyctoken, _aeolus, _initDenomination, _denominationRound, _merkleTreeHeight, _operator) public {
+    mimoExchange = IMimoExchange(_mimoFactory.getExchange(address(_cyctoken)));
+  }
 
   function getDepositParameters() external view returns (uint256, uint256) {
     uint256 denomination = _getDepositDenomination(address(this).balance);

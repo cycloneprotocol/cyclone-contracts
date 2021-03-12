@@ -1,21 +1,20 @@
 pragma solidity <0.6 >=0.4.24;
 
-
-import "./token/IERC20.sol";
-import "./token/SafeERC20.sol";
 import "./math/SafeMath.sol";
 import "./ownership/Whitelist.sol";
+import "./token/IERC20.sol";
 import "./token/IMintableToken.sol";
+import "./token/SafeERC20.sol";
+import "./uniswapv2/IRouter.sol";
 
-
-// Aeolus is the master of Cyclone tokens. He can make CYC and he is a fair guy.
+// Aeolus is the master of Cyclone tokens. He can distribute CYC and he is a fair guy.
 //
 // Note that it's ownable and the owner wields tremendous power. The ownership
 // will be transferred to a governance smart contract once CYC is sufficiently
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
-contract Aeolus is Whitelist {
+contract AeolusV2 is Whitelist {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -45,7 +44,13 @@ contract Aeolus is Whitelist {
     uint256 public lastRewardBlock;
     // Reward per block
     uint256 public rewardPerBlock;
+    // Reward to distribute
+    uint256 public rewardToDistribute;
+    // Entrance Fee Rate
+    uint256 public entranceFeeRate;
 
+    IERC20 public wrappedCoin;
+    IRouter public router;
     // The Cyclone TOKEN
     IMintableToken public cycToken;
 
@@ -53,19 +58,35 @@ contract Aeolus is Whitelist {
     mapping (address => UserInfo) public userInfo;
 
     event RewardAdded(uint256 amount, bool isBlockReward);
-    event Deposit(address indexed user, uint256 amount);
+    event Deposit(address indexed user, uint256 amount, uint256 fee);
     event Withdraw(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
 
-    constructor(IMintableToken _cycToken, IERC20 _lpToken) public {
+    constructor(IMintableToken _cycToken, IERC20 _lpToken, address _router, IERC20 _wrappedCoin) public {
         cycToken = _cycToken;
         lastRewardBlock = block.number;
         lpToken = _lpToken;
+        router = IRouter(_router);
+        wrappedCoin = _wrappedCoin;
+    }
+
+    function setEntranceFeeRate(uint256 _entranceFeeRate) public onlyOwner {
+        require(_entranceFeeRate < 10000, "invalid entrance fee rate");
+        entranceFeeRate = _entranceFeeRate;
     }
 
     function setRewardPerBlock(uint256 _rewardPerBlock) public onlyOwner {
         updateBlockReward();
         rewardPerBlock = _rewardPerBlock;
+    }
+
+    function rewardPending() internal view returns (uint256) {
+        uint256 reward = block.number.sub(lastRewardBlock).mul(rewardPerBlock);
+        uint256 cycBalance = cycToken.balanceOf(address(this)).sub(rewardToDistribute);
+        if (cycBalance < reward) {
+            return cycBalance;
+        }
+        return reward;
     }
 
     // View function to see pending reward on frontend.
@@ -78,20 +99,12 @@ contract Aeolus is Whitelist {
         if (block.number <= lastRewardBlock || lpSupply == 0) {
             return 0;
         }
-        return user.amount.mul(
-            accCYCPerShare.add(block.number.sub(lastRewardBlock).mul(rewardPerBlock).mul(1e12).div(lpSupply))
-        ).div(1e12).sub(user.rewardDebt);
-    }
 
-    // Add reward variables to be up-to-date.
-    function addReward(uint256 _amount) public onlyWhitelisted {
-        uint256 lpSupply = lpToken.balanceOf(address(this));
-        if (lpSupply == 0 || _amount == 0) {
-            return;
-        }
-        require(cycToken.mint(address(this), _amount), "failed to mint");
-        emit RewardAdded(_amount, false);
-        accCYCPerShare = accCYCPerShare.add(_amount.mul(1e12).div(lpSupply));
+        return user.amount.mul(
+            accCYCPerShare.add(
+                rewardPending().mul(1e12).div(lpSupply)
+            )
+        ).div(1e12).sub(user.rewardDebt);
     }
 
     // Update reward variables to be up-to-date.
@@ -100,12 +113,12 @@ contract Aeolus is Whitelist {
             return;
         }
         uint256 lpSupply = lpToken.balanceOf(address(this));
-        if (lpSupply == 0) {
+        uint256 reward = rewardPending();
+        if (lpSupply == 0 || reward == 0) {
             lastRewardBlock = block.number;
             return;
         }
-        uint256 reward = block.number.sub(lastRewardBlock).mul(rewardPerBlock);
-        require(cycToken.mint(address(this), reward), "failed to mint");
+        rewardToDistribute = rewardToDistribute.add(reward);
         emit RewardAdded(reward, true);
         lastRewardBlock = block.number;
         accCYCPerShare = accCYCPerShare.add(reward.mul(1e12).div(lpSupply));
@@ -121,12 +134,29 @@ contract Aeolus is Whitelist {
                 safeCYCTransfer(msg.sender, pending);
             }
         }
+        uint256 feeInCYC = 0;
         if (_amount > 0) {
             lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+            uint256 entranceFee = _amount.mul(entranceFeeRate).div(10000);
+            if (entranceFee > 0) {
+                IERC20 wct = wrappedCoin;
+                require(lpToken.approve(address(router), entranceFee), "failed to approve router");
+                (uint256 wcAmount, uint256 cycAmount) = router.removeLiquidity(address(wct), address(cycToken), entranceFee, 0, 0, address(this), block.number.mul(2));
+                address[] memory path = new address[](2);
+                path[0] = address(wct);
+                path[1] = address(cycToken);
+                require(wct.approve(address(router), wcAmount), "failed to approve router");
+                uint256[] memory amounts = router.swapExactTokensForTokens(wcAmount, 0, path, address(this), block.number.mul(2));
+                feeInCYC = cycAmount.add(amounts[1]);
+                if (feeInCYC > 0) {
+                    require(cycToken.burn(feeInCYC), "failed to burn cyc token");
+                }
+                _amount = _amount.sub(entranceFee);
+            }
             user.amount = user.amount.add(_amount);
         }
         user.rewardDebt = user.amount.mul(accCYCPerShare).div(1e12);
-        emit Deposit(msg.sender, _amount);
+        emit Deposit(msg.sender, _amount, feeInCYC);
     }
 
     // Withdraw LP tokens from Aeolus.
@@ -160,9 +190,9 @@ contract Aeolus is Whitelist {
     function safeCYCTransfer(address _to, uint256 _amount) internal {
         uint256 cycBalance = cycToken.balanceOf(address(this));
         if (_amount > cycBalance) {
-            cycToken.transfer(_to, cycBalance);
-        } else {
-            cycToken.transfer(_to, _amount);
+            _amount = cycBalance;
         }
+        rewardToDistribute -= _amount;
+        cycToken.transfer(_to, _amount);
     }
 }

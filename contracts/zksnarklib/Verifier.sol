@@ -31,7 +31,7 @@
 
 // 2019 OKIMS
 
-pragma solidity 0.5.17;
+pragma solidity <0.6 >=0.4.24;
 
 library Pairing {
     uint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;

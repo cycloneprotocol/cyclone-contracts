@@ -9,5 +9,5 @@ interface IMimoFactory {
 
     function getToken(address token) external view returns (address);
 
-    function getTokenWihId(uint256 token_id) external view returns (address);
+    function getTokenWithId(uint256 token_id) external view returns (address);
 }

@@ -352,7 +352,12 @@ contract GovernorAlpha {
         fixedProposalThreshold = _threshold;
     }
 
-     function updateQuorumVotes(uint256 _quorumVotes) external onlyTimelock {
+    function updateQuorumVotes(uint256 _quorumVotes) external onlyTimelock {
          fixedQuorumVotes = _quorumVotes;
+    }
+    
+    function updateGuardian(address _newGuardian) external {
+        require(msg.sender == guardian, "GovernorAlpha::updateGuardian: sender must be gov guardian");
+        guardian = _newGuardian;
     }
 }

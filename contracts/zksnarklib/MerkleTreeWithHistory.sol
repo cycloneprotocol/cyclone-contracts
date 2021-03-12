@@ -1,4 +1,4 @@
-pragma solidity 0.5.17;
+pragma solidity <0.6 >=0.4.24;
 
 library Hasher {
   function MiMCSponge(uint256 in_xL, uint256 in_xR) public pure returns (uint256 xL, uint256 xR);

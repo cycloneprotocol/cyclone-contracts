@@ -1,11 +1,14 @@
-pragma solidity 0.5.17;
+pragma solidity <0.6 >=0.4.24;
 
-import "./Cyclone.sol";
-import "./token/IERC20.sol";
+import "../Cyclone.sol";
+import "../token/IERC20.sol";
+import "./IMimoFactory.sol";
+import "./IMimoExchange.sol";
 
 contract ERC20Cyclone is Cyclone {
   IERC20 public xrc20Token;
   IMimoExchange public xrc20Exchange;
+  IMimoExchange public mimoExchange;
   constructor(
     IVerifier _verifier,
     IMintableToken _cyctoken,
@@ -16,9 +19,10 @@ contract ERC20Cyclone is Cyclone {
     uint32 _merkleTreeHeight,
     address _operator,
     IERC20 _xrc20Token
-  ) Cyclone(_verifier, _cyctoken, _mimoFactory, _aeolus, _initDenomination, _denominationRound, _merkleTreeHeight, _operator) public {
+  ) Cyclone(_verifier, _cyctoken, _aeolus, _initDenomination, _denominationRound, _merkleTreeHeight, _operator) public {
     xrc20Token = _xrc20Token;
     xrc20Exchange = IMimoExchange(_mimoFactory.getExchange(address(_xrc20Token)));
+    mimoExchange = IMimoExchange(_mimoFactory.getExchange(address(_cyctoken)));
   }
 
   function getDepositParameters() external view returns (uint256, uint256) {

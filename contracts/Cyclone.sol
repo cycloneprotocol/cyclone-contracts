@@ -1,8 +1,6 @@
-pragma solidity 0.5.17;
+pragma solidity <0.6 >=0.4.24;
 
 import "./math/SafeMath.sol";
-import "./mimo/IMimoFactory.sol";
-import "./mimo/IMimoExchange.sol";
 import "./token/IMintableToken.sol";
 import "./utils/Address.sol";
 import "./zksnarklib/MerkleTreeWithHistory.sol";
@@ -23,7 +21,6 @@ contract Cyclone is MerkleTreeWithHistory, ReentrancyGuard {
   mapping(bytes32 => bool) public commitments; // we store all commitments just to prevent accidental deposits with the same commitment
   IVerifier public verifier;
   IMintableToken public cycToken;
-  IMimoExchange public mimoExchange;
   IAeolus public aeolus;        // liquidity mining pool
   address public govDAO;
   uint256 public oneCYC;        // 10 ** cycToken.decimals
@@ -61,7 +58,6 @@ contract Cyclone is MerkleTreeWithHistory, ReentrancyGuard {
   constructor(
     IVerifier _verifier,
     IMintableToken _cyctoken,
-    IMimoFactory _mimoFactory,
     IAeolus _aeolus,
     uint256 _initDenomination,
     uint256 _denominationRound,
@@ -77,7 +73,6 @@ contract Cyclone is MerkleTreeWithHistory, ReentrancyGuard {
     oneCYC = 10 ** 18;
     initDenomination = _initDenomination;
     denominationRound = _denominationRound;
-    mimoExchange = IMimoExchange(_mimoFactory.getExchange(address(_cyctoken)));
     numOfShares = 0;
     maxNumOfShares = 0;
   }
@@ -104,7 +99,7 @@ contract Cyclone is MerkleTreeWithHistory, ReentrancyGuard {
   /** @dev this function is defined in a child contract */
   function _processDeposit(uint256 _minCashbackAmount) internal returns (uint256);
 
-  function _weightedAmount(uint256 _amount, uint256 _num) public view returns (uint256) {
+  function _weightedAmount(uint256 _amount, uint256 _num) internal view returns (uint256) {
     // if maxNumOfShares is 0, return _amount
     if (maxNumOfShares == 0) {
       return _amount;

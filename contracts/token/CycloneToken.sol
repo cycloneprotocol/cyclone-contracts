@@ -20,19 +20,19 @@ contract CycloneToken is StandardToken, IMintableToken, Pausable {
 
     address public operator;
     mapping (address => bool) public minters;
-    string public constant name = "Cyclone";
+    string public constant name = "Cyclone Protocol";
     string public constant symbol = "CYC";
     uint8 public constant decimals = 18;
-    ShadowToken public shadowToken;
 
     constructor(address _operator, address _lp) public {
         require (_operator != address(0), "invalid address");
-        require (_lp != address(0), "invalid address");
+        if (_lp != address(0)) {
+            // mint 2021 CYC for community
+            totalSupply_ = totalSupply_.add(2021 * 1000000000000000000);	
+            balances[_lp] = balances[_lp].add(2021 * 1000000000000000000);
+            _moveDelegates(address(0), delegates[_lp], 2021 * 1000000000000000000);
+        }
         operator = _operator;
-        // initial minting of 1200 CYC for liquidity purpose
-        totalSupply_ = totalSupply_.add(1200 * 1000000000000000000);	
-        balances[_lp] = balances[_lp].add(1200 * 1000000000000000000);
-        _moveDelegates(address(0), delegates[_lp], 1200 * 1000000000000000000);
     }
 
     function addMinter(address _minter) external onlyOperator {
@@ -43,11 +43,6 @@ contract CycloneToken is StandardToken, IMintableToken, Pausable {
     function removeMinter(address _minter) external onlyOperator {
         minters[_minter] = false;
         emit MinterRemoved(_minter);
-    }
-
-    function setShadowToken(address _shadowToken) external onlyOperator {
-        require (_shadowToken != address(0), "invalid shadow token address");
-        shadowToken = ShadowToken(_shadowToken);
     }
 
     function updateOperator(address _operator) external onlyOperator {
@@ -75,20 +70,6 @@ contract CycloneToken is StandardToken, IMintableToken, Pausable {
         emit Burned(msg.sender, _amount);
         emit Transfer(msg.sender, address(0), _amount);
         _moveDelegates(delegates[msg.sender], address(0), _amount);
-        return true;
-    }
-
-    // burnShadowToMint supports CYC tokens living on different public blockchains and CYC tokens peg to the same value
-    function burnShadowToMint(address _to, uint256 _amount) public whenNotPaused returns (bool) {
-        require (_to != address(0), "invalid address for mint");
-        require (_amount != 0, "mint amount should not be zero");
-        require(shadowToken.transferFrom(msg.sender, address(this), _amount), "failed to invoke transferFrom of shadowToken");
-        require(shadowToken.burn(_amount), "failed to burn shadowToken for given amount");
-        totalSupply_ = totalSupply_.add(_amount);
-        balances[_to] = balances[_to].add(_amount);
-        emit Minted(_to, _amount);
-        emit Transfer(address(0), _to, _amount);
-        _moveDelegates(address(0), delegates[_to], _amount);
         return true;
     }
   
