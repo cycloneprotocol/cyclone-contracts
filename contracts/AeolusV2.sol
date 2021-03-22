@@ -1,7 +1,7 @@
 pragma solidity <0.6 >=0.4.24;
 
 import "./math/SafeMath.sol";
-import "./ownership/Whitelist.sol";
+import "./ownership/Ownable.sol";
 import "./token/IERC20.sol";
 import "./token/IMintableToken.sol";
 import "./token/SafeERC20.sol";
@@ -14,7 +14,7 @@ import "./uniswapv2/IRouter.sol";
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
-contract AeolusV2 is Whitelist {
+contract AeolusV2 is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -37,7 +37,7 @@ contract AeolusV2 is Whitelist {
 
 
     // Address of LP token contract.
-    IERC20 lpToken;
+    IERC20 public lpToken;
     // Accumulated CYCs per share, times 1e12. See below.
     uint256 public accCYCPerShare;
     // Last block reward block height
@@ -92,19 +92,15 @@ contract AeolusV2 is Whitelist {
     // View function to see pending reward on frontend.
     function pendingReward(address _user) external view returns (uint256) {
         UserInfo storage user = userInfo[_user];
-        if (rewardPerBlock == 0) {
-            return 0;
-        }
-        uint256 lpSupply = lpToken.balanceOf(address(this));
-        if (block.number <= lastRewardBlock || lpSupply == 0) {
-            return 0;
+        uint256 acps = accCYCPerShare;
+        if (rewardPerBlock > 0) {
+            uint256 lpSupply = lpToken.balanceOf(address(this));
+            if (block.number > lastRewardBlock && lpSupply > 0) {
+                acps = acps.add(rewardPending().mul(1e12).div(lpSupply));
+            }
         }
 
-        return user.amount.mul(
-            accCYCPerShare.add(
-                rewardPending().mul(1e12).div(lpSupply)
-            )
-        ).div(1e12).sub(user.rewardDebt);
+        return user.amount.mul(acps).div(1e12).sub(user.rewardDebt);
     }
 
     // Update reward variables to be up-to-date.
@@ -141,13 +137,17 @@ contract AeolusV2 is Whitelist {
             if (entranceFee > 0) {
                 IERC20 wct = wrappedCoin;
                 require(lpToken.approve(address(router), entranceFee), "failed to approve router");
-                (uint256 wcAmount, uint256 cycAmount) = router.removeLiquidity(address(wct), address(cycToken), entranceFee, 0, 0, address(this), block.number.mul(2));
-                address[] memory path = new address[](2);
-                path[0] = address(wct);
-                path[1] = address(cycToken);
-                require(wct.approve(address(router), wcAmount), "failed to approve router");
-                uint256[] memory amounts = router.swapExactTokensForTokens(wcAmount, 0, path, address(this), block.number.mul(2));
-                feeInCYC = cycAmount.add(amounts[1]);
+                (uint256 wcAmount, uint256 cycAmount) = router.removeLiquidity(address(wct), address(cycToken), entranceFee, 0, 0, address(this), block.timestamp.mul(2));
+                if (wcAmount > 0) {
+                    address[] memory path = new address[](2);
+                    path[0] = address(wct);
+                    path[1] = address(cycToken);
+                    require(wct.approve(address(router), wcAmount), "failed to approve router");
+                    uint256[] memory amounts = router.swapExactTokensForTokens(wcAmount, 0, path, address(this), block.timestamp.mul(2));
+                    feeInCYC = cycAmount.add(amounts[1]);
+                } else {
+                    feeInCYC = cycAmount;
+                }
                 if (feeInCYC > 0) {
                     require(cycToken.burn(feeInCYC), "failed to burn cyc token");
                 }

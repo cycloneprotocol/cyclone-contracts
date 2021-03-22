@@ -18,10 +18,14 @@ contract UniswapV2CycloneRouter {
   function () external payable {}
 
   function purchaseCost(ICycloneV2 _cyclone) external view returns (uint256) {
+    uint256 cycAmount = _cyclone.cycDenomination();
+    if (cycAmount == 0) {
+        return 0;
+    }
     address[] memory paths = new address[](2);
     paths[0] = wrappedCoin;
     paths[1] = address(_cyclone.cycToken());
-    uint256[] memory amounts = router.getAmountsIn(_cyclone.cycDenomination(), paths);
+    uint256[] memory amounts = router.getAmountsIn(cycAmount, paths);
     return amounts[0];
   }
 
@@ -29,12 +33,15 @@ contract UniswapV2CycloneRouter {
     uint256 coinAmount = _cyclone.coinDenomination();
     uint256 tokenAmount = _cyclone.tokenDenomination();
     uint256 cycAmount = _cyclone.cycDenomination();
-    IERC20 token = _cyclone.token();
-    IERC20 cycToken = _cyclone.cycToken();
     require(msg.value >= coinAmount, "UniswapV2CycloneRouter: insufficient coin amount");
     uint256 remainingCoin = msg.value - coinAmount;
-    require(token.transferFrom(msg.sender, address(this), tokenAmount), "UniswapV2CycloneRouter: failed to transfer token");
+    if (tokenAmount > 0) {
+      IERC20 token = _cyclone.token();
+      require(token.transferFrom(msg.sender, address(this), tokenAmount), "UniswapV2CycloneRouter: failed to transfer token");
+      require(token.approve(address(_cyclone), tokenAmount), "UniswapV2CycloneRouter: failed to approve allowance");
+    }
     if (cycAmount > 0) {
+      IERC20 cycToken = _cyclone.cycToken();
       if (_buyCYC) {
         address[] memory path = new address[](2);
         path[0] = wrappedCoin;
@@ -46,9 +53,6 @@ contract UniswapV2CycloneRouter {
         require(cycToken.transferFrom(msg.sender, address(this), cycAmount), "UniswapV2CycloneRouter: failed to transfer CYC token");
       }
       require(cycToken.approve(address(_cyclone), cycAmount), "UniswapV2CycloneRouter: failed to approve CYC token allowance");
-    }
-    if (tokenAmount > 0) {
-      require(token.approve(address(_cyclone), tokenAmount), "UniswapV2CycloneRouter: failed to approve allowance");
     }
     _cyclone.deposit.value(coinAmount)(_commitment);
     if (remainingCoin > 0) {
