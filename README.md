@@ -1,6 +1,6 @@
 # Cyclone Protocol
 
-Cyclone is a **cross-chain, non-custodial, universal privacy-preserving** protocol with the **decentralized governance for all DeFi apps**. Cyclone applies zkSNARKs to enable transactional privacy for all DeFi components by breaking the on-chain link between depositor and recipient addresses. It uses a smart contract that accepts coins/tokens deposits, which can be withdrawn by a different address. Whenever an asset is withdrawn from Cyclone, there is no way to link the withdrawal to the deposit for absolute privacy.
+**Cyclone is a cross-chain, non-custodial, universal privacy-preserving protocol with the decentralized governance for all DeFi apps**. Cyclone applies zkSNARKs to enable transactional privacy for all DeFi components by breaking the on-chain link between depositor and recipient addresses. It uses a smart contract that accepts coins/tokens deposits, which can be withdrawn by a different address. Whenever an asset is withdrawn from Cyclone, there is no way to link the withdrawal to the deposit for absolute privacy.
 
 While Cyclone's zkSNARKs part is based on the attested implementation of tornado.cash, it offers unique values in supporting cross-chain and being the universal privacy-preserving layer for almost all DeFi components with the decentralized governance by CYC holders.
 
