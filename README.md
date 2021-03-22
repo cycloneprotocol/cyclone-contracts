@@ -1,65 +1,46 @@
 # Cyclone
 
-Cyclone is a multi-chain, non-custodial, privacy-preserving protocol. Cyclone applies zkSNARKs to enable transactional privacy by breaking the on-chain link between depositor and recipient addresses. It uses a smart contract that accepts coins/tokens deposits, which can be withdrawn by a different address. Whenever an asset is withdrawn from Cyclone, there is no way to link the withdrawal to the deposit for absolute privacy.
+Cyclone is a cross-chain, non-custodial, universal privacy-preserving protocol with the decentralized governance. Cyclone applies zkSNARKs to enable transactional privacy for all DeFi components by breaking the on-chain link between depositor and recipient addresses. It uses a smart contract that accepts coins/tokens deposits, which can be withdrawn by a different address. Whenever an asset is withdrawn from Cyclone, there is no way to link the withdrawal to the deposit for absolute privacy.
 
-Cyclone's zkSNARKs is based on the trusted code and implementation of tornado.cash, which works great on Ethereum except:
-- The degree of privacy it provides is proportional to the anonymity set in each of its pools, the size of which are stagnated without a properly designed incentive mechanism;
-- It only supports Ethereum and no other blockchains;
-- Decentralized governance is missing to evolve the protocol itself.
+While Cyclone's zkSNARKs part is based on the attested implementation of tornado.cash, it offers unique values in supporting cross-chain and being the universal privacy-preserving layer for almost all DeFi components with the decentralized governance by CYC holders.
 
-Cyclone is built to address these problems and aims to provide enhanced economic incentives, multi-chain capability and decentralized governance via the $CYC token -- the core parts of its token economics are mint-n-burn, anonymity mining, and liquidity mining. 
+### Cross-chain
 
-Cyclone is launching first on [IoTeX](https://iotex.io) as it is a fast and feature-rich blockchain with necessary ecosystem components and a healthy community. After that, Cyclone will launch on Ethereum, Polkadot and other mainstream public blockchains. $CYC will be the unified token for all instances of Cyclone Protocol.
-&nbsp;
+Cyclone has been launched firstly on IoTeX as it is a fast and EVM-compatible blockchain with an active community. Thanks to anonymity mining and liquidity mining that properly incentive contributions to the anonymity pools, the first four anonymity pools launched got 3+ million USD TVL in a few days, according to https://cyclone.xyz/stats.
 
-## Why it is privacy-preserving?
+Cyclone aims to launch multiple anonymity pools for various assets on Ethereum, Binance Smart Chain (BSC), and other EVM-compatible public blockchains in Q1/Q2 2021. We will be looking at launching on Polkadot and other non-EVM public blockchains in Q3 2021. CYC will be THE TOKEN for all instances of Cyclone Protocol.
 
-**TLDR: Almost the same as Tornado!**
+### Decentralized Governance
 
-![](https://github.com/tornadocash/tornado-core/raw/master/docs/diagram.png)
+Cyclone Protocol is governed in a decentralized way. The governance DAO lives on IoTeX blockchain while each anonymity pools live on different blockchains connected to IoTeX blockchain via bridges (such as ioTube). We estimate the governance DAO will be activated in early Q2 2021.
+At least the following rights are entitled to CYC holders:
 
-To make a deposit user generates a secret and sends its hash (called a commitment) along with the deposit amount to the Tornado smart contract. The contract accepts the deposit and adds the commitment to its list of deposits.
-
-Later, the user decides to make a withdrawal. To do that, the user should provide proof that he or she possesses a secret to an unspent commitment from the smart contract’s list of deposits. zkSNARKs technology allows that to happen without revealing which exact deposit corresponds to this secret. The smart contract will check the proof, and transfer deposited funds to the address specified for withdrawal. An external observer will be unable to determine which deposit this withdrawal came from.
-
-You can read more about [tornado-cash](https://tornado.cash/)'s medium article and [cryptographic review](https://tornado.cash/Tornado_cryptographic_review.pdf).
+- Which blockchain to support next
+- Launch a new anonymity pool with a certain asset
+- Update params of an existing anonymity pool, e.g., CYC to mine per day
+- Launch a new liquidity pool
+- Update params of an existing liquidity pool, e.g., CYC to mine per day
+- Other token economics of CYC
 
 
-## How $CYC works?
-$CYC is the token used to incentivize participants (liquidity providers for anonymity and trading as well as community participants) into Cyclone.
-- Total supply of $CYC is limited by the max num of deposits for each pools
-- Initial Supply: 2,021 for the community
-- Mint-n-Burn
-    - Everyone can mint CYC tokens if deposits coins/tokens to anonymity pools
-    - CYC tokens are burned when one withdraws coins/tokens from anonymity pools
-- Anonymity Mining: Coins/tokens are rewarded to ones who deposit coins/tokens into anonymity pools and keep them there for a while
-- Liquidity Mining: CYC is rewarded to users who provides liquidity for CYC on DEX (Decentralized Exchanges) such as mimo
-- Decentralized Governance will be enforced after launch, CYC will be used to govern the Cyclone Protocol.
+### Universal Privacy-preserving Layer for DeFi with Yield Aggregation
 
-## Fair and safe launch
-We advocate "fair launch" meaning **no $CYC tokens were pre-mined or pre-allocated**, and this asset was not given an initial valuation. To activate the community and bootstrap the liquidity [mimo](https://mimo.finance), 2,021 $CYC tokens are minted during the launch and are airdropped to the community!
+Cyclone Protocol is much more than a token mixer. Cyclone protocol is the world-first protocol that supports anonymity pools aggregating  yield-generating DeFi components, and it is the universal privacy-enhancement layer for all DeFi apps. It is envisioned to be a universal privacy layer for all DeFi components on various blockchains, enabling users to participate in the anonymity/liquidity mining of CYC and harvesting profits from the underlying DeFi components.
 
-We value "safe launch" too - therefore, we use the exact zkSNARKs part from Tornado's [implementation](https://github.com/tornadocash/tornado-core/releases/tag/v2.1) which has been [audited](https://tornado.cash/Tornado_circuit_audit.pdf) by [authorities](https://tornado.cash/Tornado_solidity_audit.pdf). In addition, we directly use the result from Tornado's `Trusted Setup MPC` which is [successful](https://ceremony.tornado.cash/) and running [great](https://medium.com/@tornado.cash/the-biggest-trusted-setup-ceremony-in-the-world-3c6ab9c8fffa#43d9) on [Ethereum](https://medium.com/@tornado.cash/tornado-cash-trusted-setup-ceremony-b846e1e00be1).
 
-## Contract Address on MainNet
+## How It Works
 
-- Cyclone Token: `io1f4acssp65t6s90egjkzpvrdsrjjyysnvxgqjrh`
+https://docs.cyclone.xyz/how-it-works
 
-- Timelock: `io10jv5lvagcgyvzagdlymagucyp3sy9ykktkudth`
+## Token Economics
 
-- GovernorAlpha: `io1w8n28wr5dpc2uh3pzvx4n402h0l2agmu67a26x`
+https://docs.cyclone.xyz/cyc-token
 
-- Aeolus:  `io1j2rwjfcm7jt7cwdnlkh0203chlrtfnc59424xc`
+## Roadmap
 
-- Hasher: `io1pfq0g3ye7pp0gamtw4hj9kskunn3ue7400wdm5`
+https://docs.cyclone.xyz/cyc-token-roadmap
 
-- Verifier: `io1rn3z2c9hc3fxnukwa0cl69hdveh0uy8mar8vqr`
+## Deployment and Contract Addresses
 
-- Pool 1 (Squid): `io15w9kwskwl9tn7luhcwrj0rarzjp988pafg07uf` 
-
-- Pool 2 (Dolphin): `io1wcd67wk36e3r8eku8scv7g7azsfnqs7z3e38xg` 
-
-- Pool 3 (Shark): `io1v667xgkux8uv0gell53ew5tr090c69k85deezn` 
-
-- Pool 4 (Whale): `io1wnaks7kectrkxk5v4d7mh97jkqjl4p0690jxfx` 
+See https://docs.cyclone.xyz/audit
 
