@@ -193,6 +193,6 @@ contract AeolusV2 is Ownable {
             _amount = cycBalance;
         }
         rewardToDistribute -= _amount;
-        cycToken.transfer(_to, _amount);
+        require(cycToken.transfer(_to, _amount), "failed to transfer cyc token");
     }
 }
