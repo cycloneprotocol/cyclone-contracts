@@ -160,9 +160,9 @@ contract Aeolus is Whitelist {
     function safeCYCTransfer(address _to, uint256 _amount) internal {
         uint256 cycBalance = cycToken.balanceOf(address(this));
         if (_amount > cycBalance) {
-            cycToken.transfer(_to, cycBalance);
+            require(cycToken.transfer(_to, cycBalance), "failed to transfer cyc token");
         } else {
-            cycToken.transfer(_to, _amount);
+            require(cycToken.transfer(_to, _amount), "failed to transfer cyc token");
         }
     }
 }
